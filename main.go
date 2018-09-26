@@ -52,10 +52,16 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 		key := fmt.Sprintf("%s.%s", id, varName)
 		if err == nil {
 			fmt.Printf("%s=%d\n", key, numValue)
-			r.Set(key, numValue, 0)
+			err := r.Set(key, numValue, 0).Err()
+			if err != nil {
+				fmt.Println(err)
+			}
 		} else {
 			fmt.Printf("%s=%s\n", key, varValue)
-			r.Set(key, varValue, 0)
+			err := r.Set(key, varValue, 0).Err()
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 	} else {
 		fmt.Printf("[%s]: %s\n", id, payload)
@@ -63,11 +69,6 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 }
 
 func main() {
-	r = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
 	//MQTT.DEBUG = log.New(os.Stdout, "", 0)
 	//MQTT.ERROR = log.New(os.Stdout, "", 0)
 	c := make(chan os.Signal, 1)
@@ -75,6 +76,7 @@ func main() {
 
 	hostname, _ := os.Hostname()
 
+	kvserver := flag.String("redis", "localhost:6379", "Url to the redis instance")
 	server := flag.String("server", "tcp://broker.supergreenlab.com:1883", "The full url of the MQTT server to connect to ex: tcp://127.0.0.1:1883")
 	topic := flag.String("topic", "#", "Topic to subscribe to")
 	qos := flag.Int("qos", 0, "The QoS to subscribe to messages at")
@@ -82,6 +84,12 @@ func main() {
 	username := flag.String("username", "", "A username to authenticate to the MQTT server")
 	password := flag.String("password", "", "Password to match username")
 	flag.Parse()
+
+	r = redis.NewClient(&redis.Options{
+		Addr:     *kvserver,
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
 
 	connOpts := MQTT.NewClientOptions().AddBroker(*server).SetClientID(*clientid).SetCleanSession(true)
 	if *username != "" {

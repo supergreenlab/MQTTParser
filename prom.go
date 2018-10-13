@@ -21,13 +21,13 @@ func sendPromKeyValueLog(kvl KeyValueLog) {
 			r = &PromRegistered{
 				summary: prometheus.NewSummaryVec(
 					prometheus.SummaryOpts{Name: k},
-					[]string{"id", "channel"},
+					[]string{"id", "module"},
 				),
 			}
 			prometheus.MustRegister(r.summary)
 			registered[k] = r
 		}
-		r.summary.WithLabelValues(kvl.Id, kvl.Channel).Observe(float64(v))
+		r.summary.WithLabelValues(kvl.Id, kvl.Module).Observe(float64(v))
 	}
 }
 

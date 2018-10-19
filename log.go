@@ -51,19 +51,19 @@ func newLog(rl RawLog) Log {
 
 type KeyValueLog struct {
 	Log
-	Kvs map[string]string `json:"kvs,omitempty"`
-	Kvi map[string]int    `json:"kvi,omitempty"`
+	Kvs map[string]string  `json:"kvs,omitempty"`
+	Kvi map[string]float64 `json:"kvi,omitempty"`
 }
 
 func newKeyValueLog(l Log) KeyValueLog {
 	kvl := KeyValueLog{
-		l, map[string]string{}, map[string]int{},
+		l, map[string]string{}, map[string]float64{},
 	}
 	vars := kvExpr.FindAllStringSubmatch(l.Msg, -1)
 	for _, varMatch := range vars {
 		varName := varMatch[2]
 		varValue := varMatch[3]
-		numValue, err := strconv.Atoi(varValue)
+		numValue, err := strconv.ParseFloat(varValue, 64)
 		if err == nil {
 			kvl.Kvi[varName] = numValue
 		} else {

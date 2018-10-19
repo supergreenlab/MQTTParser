@@ -12,7 +12,7 @@ import (
 var (
 	colorTrimExpr = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 	msgExpr       = regexp.MustCompile(`([A-Z]) \(([0-9]+)\) ([A-Z]+): @([A-Z]+) ([^$]+)`)
-	kvExpr        = regexp.MustCompile(`(([A-Z0-9_a-z]+) ?= ?([A-Z0-9_a-z]+))+`)
+	kvExpr        = regexp.MustCompile(`(([A-Z0-9_a-z]+) ?= ?(-?[A-Z0-9_a-z.]+))+`)
 
 	server   = flag.String("mqtt_server", "tcp://mqtt:1883", "The full url of the MQTT server to connect to ex: tcp://127.0.0.1:1883")
 	topic    = flag.String("mqtt_topic", "#", "Topic to subscribe to")

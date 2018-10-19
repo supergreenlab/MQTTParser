@@ -25,9 +25,10 @@ import (
 func main() {
 	flag.Parse()
 
+	init_redis()
 	init_mqtt()
 	init_prom()
-	init_redis()
+	init_elastic()
 
 	select {}
 }

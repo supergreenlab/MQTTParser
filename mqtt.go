@@ -17,13 +17,14 @@ var (
 	server   = flag.String("mqtt_server", "tcp://mqtt:1883", "The full url of the MQTT server to connect to ex: tcp://127.0.0.1:1883")
 	topic    = flag.String("mqtt_topic", "#", "Topic to subscribe to")
 	qos      = flag.Int("mqtt_qos", 0, "The QoS to subscribe to messages at")
-	clientid = flag.String("mqtt_clientid", "SuperGreenLog", "A clientid for the connection")
+	clientid = flag.String("mqtt_clientid", "", "A clientid for the connection")
 	username = flag.String("mqtt_username", "", "A username to authenticate to the MQTT server")
 	password = flag.String("mqtt_password", "", "Password to match username")
 )
 
 func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 	rl := newRawLog(message.Topic(), string(message.Payload()))
+	setLastSeen(rl.Id)
 
 	if msgExpr.Match([]byte(rl.Payload)) {
 		l := newLog(rl)
@@ -35,13 +36,16 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 			fmt.Println(kvl)
 			sendRedisKeyValueLog(kvl)
 			sendPromKeyValueLog(kvl)
+			indexLog(kvl)
 		} else {
 			fmt.Println("l: ")
 			fmt.Println(l)
+			indexLog(l)
 		}
 	} else {
 		fmt.Println("rl: ")
 		fmt.Println(rl)
+		indexLog(rl)
 	}
 }
 

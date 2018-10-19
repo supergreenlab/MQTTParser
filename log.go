@@ -24,11 +24,11 @@ func newRawLog(topic, payload string) RawLog {
 
 type Log struct {
 	RawLog
-	Level     string `json:"level"`
-	Timestamp int    `json:"timestamp"`
-	Tag       string `json:"tag"`
-	Module    string `json:"module"`
-	Msg       string `json:"msg"`
+	Level     string `json:"level,omitempty"`
+	Timestamp int    `json:"log_timestamp,omitempty"`
+	Tag       string `json:"tag,omitempty"`
+	Module    string `json:"module,omitempty"`
+	Msg       string `json:"msg,omitempty"`
 }
 
 func newLog(rl RawLog) Log {
@@ -51,8 +51,8 @@ func newLog(rl RawLog) Log {
 
 type KeyValueLog struct {
 	Log
-	Kvs map[string]string `json:"kvs"`
-	Kvi map[string]int    `json:"kvi"`
+	Kvs map[string]string `json:"kvs,omitempty"`
+	Kvi map[string]int    `json:"kvi,omitempty"`
 }
 
 func newKeyValueLog(l Log) KeyValueLog {

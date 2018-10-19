@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -11,6 +12,14 @@ var (
 	r        *redis.Client
 	kvserver = flag.String("redis_server", "redis:6379", "Url to the redis instance")
 )
+
+func setLastSeen(id string) {
+	key := fmt.Sprintf("%s.last_seen", id)
+	err := r.Set(key, time.Now().Unix(), 0).Err()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
 
 func sendRedisKeyValueLog(kvl KeyValueLog) {
 	for k, v := range kvl.Kvs {

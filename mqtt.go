@@ -11,8 +11,9 @@ import (
 
 var (
 	colorTrimExpr = regexp.MustCompile(`\x1b\[[0-9;]*m`)
-	msgExpr       = regexp.MustCompile(`([A-Z]) \(([0-9]+)\) ([A-Z]+): @([A-Za-z]+) ([^$]+)`)
-	kvExpr        = regexp.MustCompile(`(([A-Z0-9_a-z]+) ?= ?(-?[A-Z0-9_a-z.]+))+`)
+	msgExpr       = regexp.MustCompile(`([A-Z]) \(([0-9]+)\) ([A-Z]+): @([A-Z0-9a-z_]+) ([^$]+)`)
+	kvExpr        = regexp.MustCompile(`(([A-Z0-9a-z_]+) ?= ?(-?[A-Z0-9_a-z.]+))+`)
+	bootExpr      = regexp.MustCompile(`First connect`)
 
 	server   = flag.String("mqtt_server", "tcp://mqtt:1883", "The full url of the MQTT server to connect to ex: tcp://127.0.0.1:1883")
 	topic    = flag.String("mqtt_topic", "#", "Topic to subscribe to")
@@ -24,10 +25,14 @@ var (
 
 func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 	rl := newRawLog(message.Topic(), string(message.Payload()))
+	addId(rl.Id)
 	setLastSeen(rl.Id)
 
 	if msgExpr.Match([]byte(rl.Payload)) {
 		l := newLog(rl)
+		if bootExpr.Match([]byte(l.Msg)) {
+			sendPromFirstConnect(l)
+		}
 
 		if kvExpr.Match([]byte(l.Msg)) {
 			kvl := newKeyValueLog(l)

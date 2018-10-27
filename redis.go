@@ -13,6 +13,13 @@ var (
 	kvserver = flag.String("redis_server", "redis:6379", "Url to the redis instance")
 )
 
+func addId(id string) {
+	err := r.HSet("pcbs", id, id).Err()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func setLastSeen(id string) {
 	key := fmt.Sprintf("%s.last_seen", id)
 	err := r.Set(key, time.Now().Unix(), 0).Err()

@@ -41,16 +41,16 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 			fmt.Println(kvl)
 			sendRedisKeyValueLog(kvl)
 			sendPromKeyValueLog(kvl)
-			indexLog(kvl)
+			//indexLog(kvl)
 		} else {
 			fmt.Println("l: ")
 			fmt.Println(l)
-			indexLog(l)
+			//indexLog(l)
 		}
 	} else {
 		fmt.Println("rl: ")
 		fmt.Println(rl)
-		indexLog(rl)
+		//indexLog(rl)
 	}
 }
 

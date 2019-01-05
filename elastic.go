@@ -83,20 +83,22 @@ func start_elastic() {
 			continue
 		}
 		break
-	}
 
-	exists, err := client.IndexExists("log").Do(ctx)
-	if err != nil {
-		panic(err)
-	}
-	if !exists {
-		log.Print("Not EXIST !")
-		createIndex, err := client.CreateIndex("log").BodyString(mapping).Do(ctx)
+		exists, err := client.IndexExists("log").Do(ctx)
 		if err != nil {
-			panic(err)
+			log.Print(err)
+			continue
 		}
-		if !createIndex.Acknowledged {
-			log.Print("Not aknowledged..")
+		if !exists {
+			log.Print("Not EXIST !")
+			createIndex, err := client.CreateIndex("log").BodyString(mapping).Do(ctx)
+			if err != nil {
+				log.Print(err)
+				continue
+			}
+			if !createIndex.Acknowledged {
+				log.Print("Not aknowledged..")
+			}
 		}
 	}
 
@@ -107,7 +109,7 @@ func start_elastic() {
 			BodyJson(l).
 			Do(ctx)
 		if err != nil {
-			panic(err)
+			log.Print(err)
 		}
 	}
 }

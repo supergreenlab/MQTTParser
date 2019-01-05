@@ -28,7 +28,7 @@ func main() {
 	init_redis()
 	init_mqtt()
 	init_prom()
-	init_elastic()
+	//init_elastic()
 
 	select {}
 }

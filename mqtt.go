@@ -17,7 +17,7 @@ var (
 
 	server   = flag.String("mqtt_server", "tcp://mqtt:1883", "The full url of the MQTT server to connect to ex: tcp://127.0.0.1:1883")
 	topic    = flag.String("mqtt_topic", "#", "Topic to subscribe to")
-	qos      = flag.Int("mqtt_qos", 0, "The QoS to subscribe to messages at")
+	qos      = flag.Int("mqtt_qos", 2, "The QoS to subscribe to messages at")
 	clientid = flag.String("mqtt_clientid", "", "A clientid for the connection")
 	username = flag.String("mqtt_username", "", "A username to authenticate to the MQTT server")
 	password = flag.String("mqtt_password", "", "Password to match username")

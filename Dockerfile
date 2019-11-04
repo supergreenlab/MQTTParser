@@ -1,7 +1,7 @@
 FROM scratch
 
 ADD ca-certificates.crt /etc/ssl/certs/
-ADD supergreenlog /
+ADD bin/supergreenlog /
 
 EXPOSE 8080
 

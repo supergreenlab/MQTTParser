@@ -16,5 +16,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o supergreenlog .
-docker build -t supergreenlab/supergreenlog .
+CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/mqttparser cmd/parser/main.go
+docker build -t supergreenlab/mqttparser .

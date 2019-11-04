@@ -1,1 +1,4 @@
-supergreenlog
+tmp
+bin/mqttparser
+mqttparser.toml
+air_errors.log

@@ -18,8 +18,15 @@
 
 package redis
 
-import "github.com/spf13/pflag"
+import (
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+)
 
 var (
-	redisURL = pflag.String("redis_server", "redis:6379", "Url to the redis instance")
+	redisURL = pflag.String("redisurl", "redis:6379", "Url to the redis instance")
 )
+
+func init() {
+	viper.SetDefault("RedisURL", "redis:6379")
+}

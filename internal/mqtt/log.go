@@ -12,7 +12,10 @@ func newRawLog(topic, payload string) mqttparser.RawLog {
 	id := ts[0]
 	channel := ts[1]
 	rl := mqttparser.RawLog{
-		id, channel, topic, payload,
+		ID:      id,
+		Channel: channel,
+		Topic:   topic,
+		Payload: payload,
 	}
 	return rl
 }
@@ -29,7 +32,12 @@ func newLog(rl mqttparser.RawLog) mqttparser.Log {
 	msg := sm[5]
 
 	l := mqttparser.Log{
-		rl, level, ts, tag, module, msg,
+		RawLog:    rl,
+		Level:     level,
+		Timestamp: ts,
+		Tag:       tag,
+		Module:    module,
+		Msg:       msg,
 	}
 
 	return l
@@ -37,7 +45,9 @@ func newLog(rl mqttparser.RawLog) mqttparser.Log {
 
 func newKeyValueLog(l mqttparser.Log) mqttparser.KeyValueLog {
 	kvl := mqttparser.KeyValueLog{
-		l, map[string]string{}, map[string]float64{},
+		Log: l,
+		Kvs: map[string]string{},
+		Kvi: map[string]float64{},
 	}
 	vars := kvExpr.FindAllStringSubmatch(l.Msg, -1)
 	for _, varMatch := range vars {

@@ -21,11 +21,13 @@ package mqtt
 import (
 	"crypto/tls"
 	"fmt"
+	"log"
 	"regexp"
 
 	"github.com/SuperGreenLab/MQTTParser/internal/prometheus"
 	"github.com/SuperGreenLab/MQTTParser/internal/redis"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -49,42 +51,48 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 		if kvExpr.Match([]byte(l.Msg)) {
 			kvl := newKeyValueLog(l)
 
-			fmt.Println("kvl: ")
-			fmt.Println(kvl)
+			log.Println("kvl: ")
+			log.Println(kvl)
 			redis.SendRedisKeyValueLog(kvl)
 			prometheus.SendPromKeyValueLog(kvl)
 		} else {
-			fmt.Println("l: ")
-			fmt.Println(l)
+			log.Println("l: ")
+			log.Println(l)
 		}
 	} else {
-		fmt.Println("rl: ")
-		fmt.Println(rl)
+		log.Println("rl: ")
+		log.Println(rl)
 	}
 }
 
 // InitMQTT starts the MQTT connection
 func InitMQTT() {
-	connOpts := MQTT.NewClientOptions().AddBroker(*server).SetClientID(*clientid).SetCleanSession(true)
-	if *username != "" {
-		connOpts.SetUsername(*username)
-		if *password != "" {
-			connOpts.SetPassword(*password)
+	go func() {
+		connOpts := MQTT.NewClientOptions().AddBroker(*server).SetClientID(*clientid).SetCleanSession(true)
+		var (
+			username = viper.GetString("MQTTUsername")
+			password = viper.GetString("MQTTPassword")
+		)
+		if username != "" {
+			connOpts.SetUsername(username)
+			if password != "" {
+				connOpts.SetPassword(password)
+			}
 		}
-	}
-	tlsConfig := &tls.Config{InsecureSkipVerify: true, ClientAuth: tls.NoClientCert}
-	connOpts.SetTLSConfig(tlsConfig)
+		tlsConfig := &tls.Config{InsecureSkipVerify: true, ClientAuth: tls.NoClientCert}
+		connOpts.SetTLSConfig(tlsConfig)
 
-	connOpts.OnConnect = func(c MQTT.Client) {
-		if token := c.Subscribe(*topic, byte(*qos), onMessageReceived); token.Wait() && token.Error() != nil {
-			panic(token.Error())
+		connOpts.OnConnect = func(c MQTT.Client) {
+			if token := c.Subscribe(viper.GetString("MQTTTopic"), byte(*qos), onMessageReceived); token.Wait() && token.Error() != nil {
+				log.Fatal(token.Error())
+			}
 		}
-	}
 
-	client := MQTT.NewClient(connOpts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
-	} else {
-		fmt.Printf("Connected to %s\n", *server)
-	}
+		client := MQTT.NewClient(connOpts)
+		if token := client.Connect(); token.Wait() && token.Error() != nil {
+			log.Fatal(token.Error())
+		} else {
+			fmt.Printf("Connected to %s\n", *server)
+		}
+	}()
 }

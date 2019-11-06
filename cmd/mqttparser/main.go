@@ -30,7 +30,7 @@ import (
 
 func main() {
 	viper.SetConfigName("mqttparser")
-	viper.AddConfigPath("/etc/")
+	viper.AddConfigPath("/etc/mqttparser")
 	viper.AddConfigPath(".")
 
 	err := viper.ReadInConfig()
@@ -45,8 +45,8 @@ func main() {
 	viper.BindPFlags(pflag.CommandLine)
 
 	redis.InitRedis()
-	mqtt.InitMQTT()
 	prometheus.InitPrometheus()
+	mqtt.InitMQTT()
 
 	select {}
 }

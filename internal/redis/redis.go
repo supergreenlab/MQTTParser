@@ -24,6 +24,7 @@ import (
 
 	mqttparser "github.com/SuperGreenLab/MQTTParser/pkg"
 	"github.com/go-redis/redis"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -38,7 +39,7 @@ func AddID(id string) {
 	}
 }
 
-// SetLastSeen updated the last_seen key for a controller
+// SetLastSeen updates the last_seen key for a controller
 func SetLastSeen(id string) {
 	key := fmt.Sprintf("%s.last_seen", id)
 	err := r.Set(key, time.Now().Unix(), 0).Err()
@@ -69,7 +70,7 @@ func SendRedisKeyValueLog(kvl mqttparser.KeyValueLog) {
 // InitRedis init the redis connection
 func InitRedis() {
 	r = redis.NewClient(&redis.Options{
-		Addr:     *redisURL,
+		Addr:     viper.GetString("RedisURL"),
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})

@@ -32,7 +32,7 @@ import (
 
 var (
 	colorTrimExpr = regexp.MustCompile(`\x1b\[[0-9;]*m`)
-	msgExpr       = regexp.MustCompile(`([A-Z]) \(([0-9]+)\) ([A-Z]+): @([A-Z0-9a-z_]+) ([^$]+)`)
+	msgExpr       = regexp.MustCompile(`([A-Z]) \((-?[0-9]+)\) ([A-Z]+): @([A-Z0-9a-z_]+) ([^$]+)`)
 	kvExpr        = regexp.MustCompile(`(([A-Z0-9a-z_]+) ?= ?(-?[A-Z0-9_a-z.]+))+`)
 	bootExpr      = regexp.MustCompile(`First connect`)
 )
@@ -51,17 +51,9 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 		if kvExpr.Match([]byte(l.Msg)) {
 			kvl := newKeyValueLog(l)
 
-			log.Println("kvl: ")
-			log.Println(kvl)
 			redis.SendRedisKeyValueLog(kvl)
 			prometheus.SendPromKeyValueLog(kvl)
-		} else {
-			log.Println("l: ")
-			log.Println(l)
 		}
-	} else {
-		log.Println("rl: ")
-		log.Println(rl)
 	}
 }
 

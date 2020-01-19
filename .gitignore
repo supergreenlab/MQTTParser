@@ -1,4 +1,4 @@
 tmp
 bin/mqttparser
-mqttparser.toml
+config/mqttparser.toml
 air_errors.log

@@ -1,0 +1,7 @@
+MQTTServer = ""
+MQTTTopic = ""
+MQTTClientID = ""
+MQTTUsername = ""
+MQTTPassword = ""
+
+RedisURL = ""

@@ -1,8 +1,10 @@
 FROM golang:1.13.3
 
-RUN curl -o /usr/local/bin/air https://raw.githubusercontent.com/cosmtrek/air/master/bin/linux/air && chmod +x /usr/local/bin/air
+RUN go get -u github.com/cosmtrek/air
 
 RUN mkdir /app
 WORKDIR /app
 
-ENTRYPOINT ["/usr/local/bin/air"]
+EXPOSE 8080
+
+ENTRYPOINT ["/go/bin/air"]

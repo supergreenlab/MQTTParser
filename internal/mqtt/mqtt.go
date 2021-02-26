@@ -27,6 +27,7 @@ import (
 	"github.com/SuperGreenLab/MQTTParser/internal/prometheus"
 	"github.com/SuperGreenLab/MQTTParser/internal/redis"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -53,7 +54,11 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 
 			redis.SendRedisKeyValueLog(kvl)
 			prometheus.SendPromKeyValueLog(kvl)
+			prometheus.SendPromMessageRecieved(true)
 		}
+	} else {
+		prometheus.SendPromMessageRecieved(false)
+		logrus.Warningf("Unknown message: (%s) %s", message.Topic(), string(message.Payload()))
 	}
 }
 

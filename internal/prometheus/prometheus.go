@@ -25,7 +25,15 @@ import (
 
 	mqttparser "github.com/SuperGreenLab/MQTTParser/pkg"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+var (
+	messagesCount = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "mqttparser_messages",
+		Help: "Number of MQTT messages processed",
+	}, []string{"known"})
 )
 
 type promRegistered struct {
@@ -68,6 +76,14 @@ func SendPromKeyValueLog(kvl mqttparser.KeyValueLog) {
 		r.summary.WithLabelValues(kvl.ID, kvl.Module).Observe(float64(v))
 		r.gauge.WithLabelValues(kvl.ID, kvl.Module).Set(float64(v))
 	}
+}
+
+func SendPromMessageRecieved(known bool) {
+	label := "true"
+	if known == false {
+		label = "false"
+	}
+	messagesCount.WithLabelValues(label).Inc()
 }
 
 func startPromHTTP() {

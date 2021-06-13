@@ -22,11 +22,13 @@ import (
 	"crypto/tls"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 
 	"github.com/SuperGreenLab/MQTTParser/internal/prometheus"
 	"github.com/SuperGreenLab/MQTTParser/internal/redis"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -55,6 +57,8 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 			redis.SendRedisKeyValueLog(kvl)
 			prometheus.SendPromKeyValueLog(kvl)
 			prometheus.SendPromMessageRecieved(true)
+		} else {
+			redis.SendRedisEventLog(l)
 		}
 	} else {
 		prometheus.SendPromMessageRecieved(false)
@@ -65,6 +69,9 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 // InitMQTT starts the MQTT connection
 func InitMQTT() {
 	go func() {
+		mqtt.ERROR = log.New(os.Stdout, "[ERROR] ", 0)
+		mqtt.CRITICAL = log.New(os.Stdout, "[CRIT] ", 0)
+		mqtt.WARN = log.New(os.Stdout, "[WARN]  ", 0)
 		connOpts := MQTT.NewClientOptions().AddBroker(*server).SetClientID(*clientid).SetCleanSession(true)
 		var (
 			username = viper.GetString("MQTTUsername")

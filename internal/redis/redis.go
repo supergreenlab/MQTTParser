@@ -19,11 +19,13 @@
 package redis
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
 	mqttparser "github.com/SuperGreenLab/MQTTParser/pkg"
 	"github.com/go-redis/redis"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -54,7 +56,7 @@ func SendRedisKeyValueLog(kvl mqttparser.KeyValueLog) {
 		key := fmt.Sprintf("%s.%s.%s", kvl.ID, kvl.Module, k)
 		err := r.Set(key, v, 0).Err()
 		if err != nil {
-			fmt.Println(err)
+			logrus.Errorf("r.Set in SendRedisKeyValueLog %q", err)
 		}
 		r.Publish(fmt.Sprintf("pub.%s", key), v)
 	}
@@ -63,10 +65,19 @@ func SendRedisKeyValueLog(kvl mqttparser.KeyValueLog) {
 		key := fmt.Sprintf("%s.%s.%s", kvl.ID, kvl.Module, k)
 		err := r.Set(key, v, 0).Err()
 		if err != nil {
-			fmt.Println(err)
+			logrus.Errorf("r.Set in SendRedisKeyValueLog %q", err)
 		}
 		r.Publish(fmt.Sprintf("pub.%s", key), v)
 	}
+}
+
+func SendRedisEventLog(l mqttparser.Log) {
+	lstr, err := json.Marshal(l)
+	if err != nil {
+		logrus.Errorf("json.Marshal in SendRedisEventLog %q", err)
+		return
+	}
+	r.Publish(fmt.Sprintf("pub.%s.%s.events", l.ID, l.Module), lstr)
 }
 
 // InitRedis init the redis connection

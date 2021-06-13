@@ -24,6 +24,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/SuperGreenLab/MQTTParser/internal/prometheus"
 	"github.com/SuperGreenLab/MQTTParser/internal/redis"
@@ -41,6 +42,9 @@ var (
 )
 
 func onMessageReceived(client MQTT.Client, message MQTT.Message) {
+	if strings.HasSuffix(message.Topic(), "cmd") {
+		return
+	}
 	rl := newRawLog(message.Topic(), string(message.Payload()))
 	redis.AddID(rl.ID)
 	redis.SetLastSeen(rl.ID)

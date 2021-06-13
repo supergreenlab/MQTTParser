@@ -19,7 +19,6 @@
 package redis
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -72,12 +71,7 @@ func SendRedisKeyValueLog(kvl mqttparser.KeyValueLog) {
 }
 
 func SendRedisEventLog(l mqttparser.Log) {
-	lstr, err := json.Marshal(l)
-	if err != nil {
-		logrus.Errorf("json.Marshal in SendRedisEventLog %q", err)
-		return
-	}
-	r.Publish(fmt.Sprintf("pub.%s.%s.events", l.ID, l.Module), lstr)
+	r.Publish(fmt.Sprintf("pub.%s.%s.events", l.ID, l.Module), l.Msg)
 }
 
 // InitRedis init the redis connection

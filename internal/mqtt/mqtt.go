@@ -28,7 +28,6 @@ import (
 
 	"github.com/SuperGreenLab/MQTTParser/internal/prometheus"
 	"github.com/SuperGreenLab/MQTTParser/internal/redis"
-	MQTT "github.com/eclipse/paho.mqtt.golang"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -41,7 +40,7 @@ var (
 	bootExpr      = regexp.MustCompile(`First connect`)
 )
 
-func onMessageReceived(client MQTT.Client, message MQTT.Message) {
+func onMessageReceived(client mqtt.Client, message mqtt.Message) {
 	if strings.HasSuffix(message.Topic(), "cmd") {
 		return
 	}
@@ -70,37 +69,49 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 	}
 }
 
+func subscriveRemoteCommands(client mqtt.Client) {
+	ch := redis.SubscribeRemoteCmdChannel()
+
+	for c := range ch {
+		logrus.Infof("Remote cmd %s %s", c.ControllerID, c.Cmd)
+		client.Publish(fmt.Sprintf("%s.cmd", c.ControllerID), byte(*qos), false, c.Cmd)
+	}
+}
+
+func startMQTT() {
+	mqtt.ERROR = log.New(os.Stdout, "[ERROR] ", 0)
+	mqtt.CRITICAL = log.New(os.Stdout, "[CRIT] ", 0)
+	mqtt.WARN = log.New(os.Stdout, "[WARN]  ", 0)
+	connOpts := mqtt.NewClientOptions().AddBroker(*server).SetClientID(*clientid).SetCleanSession(true)
+	var (
+		username = viper.GetString("MQTTUsername")
+		password = viper.GetString("MQTTPassword")
+	)
+	if username != "" {
+		connOpts.SetUsername(username)
+		if password != "" {
+			connOpts.SetPassword(password)
+		}
+	}
+	tlsConfig := &tls.Config{InsecureSkipVerify: true, ClientAuth: tls.NoClientCert}
+	connOpts.SetTLSConfig(tlsConfig)
+
+	connOpts.OnConnect = func(c mqtt.Client) {
+		if token := c.Subscribe(viper.GetString("MQTTTopic"), byte(*qos), onMessageReceived); token.Wait() && token.Error() != nil {
+			log.Fatal(token.Error())
+		}
+	}
+
+	client := mqtt.NewClient(connOpts)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		log.Fatal(token.Error())
+	} else {
+		fmt.Printf("Connected to %s\n", *server)
+		go subscriveRemoteCommands(client)
+	}
+}
+
 // InitMQTT starts the MQTT connection
 func InitMQTT() {
-	go func() {
-		mqtt.ERROR = log.New(os.Stdout, "[ERROR] ", 0)
-		mqtt.CRITICAL = log.New(os.Stdout, "[CRIT] ", 0)
-		mqtt.WARN = log.New(os.Stdout, "[WARN]  ", 0)
-		connOpts := MQTT.NewClientOptions().AddBroker(*server).SetClientID(*clientid).SetCleanSession(true)
-		var (
-			username = viper.GetString("MQTTUsername")
-			password = viper.GetString("MQTTPassword")
-		)
-		if username != "" {
-			connOpts.SetUsername(username)
-			if password != "" {
-				connOpts.SetPassword(password)
-			}
-		}
-		tlsConfig := &tls.Config{InsecureSkipVerify: true, ClientAuth: tls.NoClientCert}
-		connOpts.SetTLSConfig(tlsConfig)
-
-		connOpts.OnConnect = func(c MQTT.Client) {
-			if token := c.Subscribe(viper.GetString("MQTTTopic"), byte(*qos), onMessageReceived); token.Wait() && token.Error() != nil {
-				log.Fatal(token.Error())
-			}
-		}
-
-		client := MQTT.NewClient(connOpts)
-		if token := client.Connect(); token.Wait() && token.Error() != nil {
-			log.Fatal(token.Error())
-		} else {
-			fmt.Printf("Connected to %s\n", *server)
-		}
-	}()
+	go startMQTT()
 }

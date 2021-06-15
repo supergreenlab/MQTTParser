@@ -20,6 +20,7 @@ package redis
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	mqttparser "github.com/SuperGreenLab/MQTTParser/pkg"
@@ -57,7 +58,7 @@ func SendRedisKeyValueLog(kvl mqttparser.KeyValueLog) {
 		if err != nil {
 			logrus.Errorf("r.Set in SendRedisKeyValueLog %q", err)
 		}
-		r.Publish(fmt.Sprintf("pub.%s", key), v)
+		r.Publish(fmt.Sprintf("pub.%s.log", key), v)
 	}
 
 	for k, v := range kvl.Kvi {
@@ -66,12 +67,34 @@ func SendRedisKeyValueLog(kvl mqttparser.KeyValueLog) {
 		if err != nil {
 			logrus.Errorf("r.Set in SendRedisKeyValueLog %q", err)
 		}
-		r.Publish(fmt.Sprintf("pub.%s", key), v)
+		r.Publish(fmt.Sprintf("pub.%s.log", key), v)
 	}
 }
 
 func SendRedisEventLog(l mqttparser.Log) {
 	r.Publish(fmt.Sprintf("pub.%s.%s.events", l.ID, l.Module), l.Msg)
+}
+
+type RemoteCmd struct {
+	ControllerID string
+	Cmd          string
+}
+
+func SubscribeRemoteCmdChannel() chan RemoteCmd {
+	ch := make(chan RemoteCmd, 100)
+	rps := r.PSubscribe("pub.*.cmd")
+	go func() {
+		defer close(ch)
+		for msg := range rps.Channel() {
+			keyParts := strings.Split(msg.Channel, ".")
+			if len(keyParts) != 3 {
+				logrus.Errorf("strings.Split in SubscribeRemoteCmdChannel: Wrong number of segments in channel name")
+				return
+			}
+			ch <- RemoteCmd{ControllerID: keyParts[1], Cmd: msg.Payload}
+		}
+	}()
+	return ch
 }
 
 // InitRedis init the redis connection

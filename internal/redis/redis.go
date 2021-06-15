@@ -58,7 +58,7 @@ func SendRedisKeyValueLog(kvl mqttparser.KeyValueLog) {
 		if err != nil {
 			logrus.Errorf("r.Set in SendRedisKeyValueLog %q", err)
 		}
-		r.Publish(fmt.Sprintf("pub.%s.log", key), v)
+		r.Publish(fmt.Sprintf("pub.%s.metric", key), v)
 	}
 
 	for k, v := range kvl.Kvi {
@@ -67,12 +67,12 @@ func SendRedisKeyValueLog(kvl mqttparser.KeyValueLog) {
 		if err != nil {
 			logrus.Errorf("r.Set in SendRedisKeyValueLog %q", err)
 		}
-		r.Publish(fmt.Sprintf("pub.%s.log", key), v)
+		r.Publish(fmt.Sprintf("pub.%s.metric", key), v)
 	}
 }
 
 func SendRedisEventLog(l mqttparser.Log) {
-	r.Publish(fmt.Sprintf("pub.%s.%s.events", l.ID, l.Module), l.Msg)
+	r.Publish(fmt.Sprintf("pub.%s.%s.log", l.ID, l.Module), l.Msg)
 }
 
 type RemoteCmd struct {

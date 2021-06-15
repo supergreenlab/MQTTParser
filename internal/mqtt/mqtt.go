@@ -73,7 +73,6 @@ func subscriveRemoteCommands(client mqtt.Client) {
 	ch := redis.SubscribeRemoteCmdChannel()
 
 	for c := range ch {
-		logrus.Infof("Remote cmd %s %s", c.ControllerID, c.Cmd)
 		client.Publish(fmt.Sprintf("%s.cmd", c.ControllerID), byte(*qos), false, c.Cmd)
 	}
 }

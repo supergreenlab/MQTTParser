@@ -36,7 +36,7 @@ import (
 var (
 	colorTrimExpr = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 	msgExpr       = regexp.MustCompile(`([A-Z]) \((-?[0-9]+)\) ([A-Z]+): @([A-Z0-9a-z_]+) ([^$]+)`)
-	kvExpr        = regexp.MustCompile(`(([A-Z0-9a-z_]+) ?= ?(-?[A-Z0-9_a-z.]+))+`)
+	kvExpr        = regexp.MustCompile(`(([A-Z0-9a-z_]+) ?= ?(-?[A-Z0-9_a-z/.]+))+`)
 	bootExpr      = regexp.MustCompile(`First connect`)
 )
 
